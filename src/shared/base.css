@@ -1,0 +1,168 @@
+/* 共通の色とフォント。ライト/ダークの両方を定義する */
+:root {
+  --bg: #eef2f8;
+  --surface: #ffffff;
+  --surface-2: #f5f7fb;
+  --fg: #1a2233;
+  --fg-2: #414b5e;
+  --muted: #687389;
+  --line: #d6dce7;
+  --accent: #e5483d;
+  --accent-strong: #c7352b;
+  --on-accent: #ffffff;
+  --ok: #1d7a46;
+  --ok-bg: #e3f4ea;
+  --warn: #9a5a06;
+  --warn-bg: #fcf1df;
+  --focus: #2f6fd6;
+  --radius: 14px;
+  --font:
+    "Hiragino Maru Gothic ProN", "Hiragino Sans", "BIZ UDPGothic", "Noto Sans JP", system-ui,
+    sans-serif;
+  --mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121722;
+    --surface: #1b2231;
+    --surface-2: #222a3b;
+    --fg: #e8ecf3;
+    --fg-2: #c3cbd8;
+    --muted: #97a1b3;
+    --line: #2f384b;
+    --accent: #f0625a;
+    --accent-strong: #ff7a72;
+    --on-accent: #1a0d0c;
+    --ok: #6fd49c;
+    --ok-bg: #173323;
+    --warn: #f0b25c;
+    --warn-bg: #36281a;
+    --focus: #79a8f5;
+    color-scheme: dark;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-text-size-adjust: 100%;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.btn {
+  appearance: none;
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  color: var(--fg);
+  border-radius: 999px;
+  padding: 10px 18px;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+
+.btn-quiet {
+  border-color: transparent;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* カプセル（上半分が色付き、下半分が透明） */
+.capsule {
+  --size: 28px;
+  position: relative;
+  display: inline-block;
+  width: var(--size);
+  height: var(--size);
+  flex: none;
+}
+
+.capsule-top,
+.capsule-bottom {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  border: 1.5px solid rgb(0 0 0 / 0.18);
+}
+
+.capsule-top {
+  top: 0;
+  border-radius: var(--size) var(--size) 0 0;
+  border-bottom: 0;
+  background:
+    radial-gradient(circle at 32% 38%, rgb(255 255 255 / 0.55) 0 14%, transparent 15%), var(--cap);
+}
+
+.capsule-bottom {
+  bottom: 0;
+  border-radius: 0 0 var(--size) var(--size);
+  border-top: 1px solid rgb(0 0 0 / 0.22);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--cap) 30%, rgb(255 255 255 / 0.85)),
+    color-mix(in srgb, var(--cap) 45%, rgb(225 232 242 / 0.9))
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    /* biome-ignore lint/complexity/noImportantStyles: 動きを減らす設定はすべてのアニメーションに優先させる */
+    animation-duration: 0.01ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: 同上 */
+    animation-iteration-count: 1 !important;
+    /* biome-ignore lint/complexity/noImportantStyles: 同上 */
+    transition-duration: 0.01ms !important;
+  }
+}
