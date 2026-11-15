@@ -1,5 +1,5 @@
 import type { EventConfig } from "../lib/event.ts";
-import { eventDate, isoToLocalInput, localInputToIso } from "../lib/time.ts";
+import { eventDate } from "../lib/time.ts";
 
 /** 管理画面の入力中の状態です。 */
 export interface DraftItem {
@@ -13,10 +13,6 @@ export interface DraftItem {
 export interface Draft {
   readonly id: string;
   readonly name: string;
-  /** datetime-local の値（日本時間） */
-  readonly from: string;
-  readonly to: string;
-  readonly daily: number;
   readonly items: readonly DraftItem[];
 }
 
@@ -46,13 +42,9 @@ export function generateEventId(now: Date): string {
 }
 
 export function defaultDraft(now: Date): Draft {
-  const today = eventDate(now);
   return {
     id: generateEventId(now),
     name: "イベント抽選会",
-    from: `${today}T10:00`,
-    to: `${today}T18:00`,
-    daily: 1,
     items: [
       { key: newKey(), c: "#e53935", l: "1等", n: 1 },
       { key: newKey(), c: "#1e88e5", l: "2等", n: 3 },
@@ -67,9 +59,6 @@ export function draftToConfig(draft: Draft): EventConfig {
     v: 1,
     id: draft.id.trim(),
     name: draft.name.trim(),
-    from: localInputToIso(draft.from),
-    to: localInputToIso(draft.to),
-    daily: draft.daily,
     items: draft.items.map(({ c, l, n }) => ({ c: c.toLowerCase(), l: l.trim(), n })),
   };
 }
@@ -78,9 +67,6 @@ export function configToDraft(config: EventConfig): Draft {
   return {
     id: config.id,
     name: config.name,
-    from: isoToLocalInput(config.from),
-    to: isoToLocalInput(config.to),
-    daily: config.daily,
     items: config.items.map((item) => ({ key: newKey(), ...item })),
   };
 }
@@ -107,9 +93,6 @@ export function parseDraft(raw: string | null): Draft | null {
     if (
       typeof draft["id"] !== "string" ||
       typeof draft["name"] !== "string" ||
-      typeof draft["from"] !== "string" ||
-      typeof draft["to"] !== "string" ||
-      typeof draft["daily"] !== "number" ||
       !Array.isArray(items) ||
       !items.every(isDraftItem)
     ) {
@@ -118,9 +101,6 @@ export function parseDraft(raw: string | null): Draft | null {
     return {
       id: draft["id"],
       name: draft["name"],
-      from: draft["from"],
-      to: draft["to"],
-      daily: draft["daily"],
       items,
     };
   } catch {

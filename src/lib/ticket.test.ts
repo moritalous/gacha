@@ -27,7 +27,7 @@ describe("issueTicket / readTicket", () => {
   it("d を書き換えると invalid", async () => {
     const config = sampleConfig();
     const { h } = await issueTicket(config, SECRET);
-    const tampered = encodeText(JSON.stringify({ ...config, daily: 99 }));
+    const tampered = encodeText(JSON.stringify({ ...config, name: "書き換え" }));
     expect(await readTicket(fragmentOf(tampered, h), SECRET)).toEqual({ kind: "invalid" });
   });
 
@@ -43,7 +43,7 @@ describe("issueTicket / readTicket", () => {
   });
 
   it("ハッシュが合っていても、中身が不正なら invalid", async () => {
-    const d = encodeText(JSON.stringify({ ...sampleConfig(), daily: 0 }));
+    const d = encodeText(JSON.stringify({ ...sampleConfig(), items: [] }));
     const h = await computeHash(SECRET, d);
     expect(await readTicket(fragmentOf(d, h), SECRET)).toEqual({ kind: "invalid" });
   });

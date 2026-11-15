@@ -8,9 +8,7 @@ import {
   totalCount,
   validateEvent,
 } from "../lib/event.ts";
-import { safeEqual } from "../lib/hash.ts";
 import { buildGachaUrl, readTicket } from "../lib/ticket.ts";
-import { formatDateTime } from "../lib/time.ts";
 import {
   configToDraft,
   type Draft,
@@ -25,7 +23,6 @@ import {
 } from "./draft.ts";
 
 const DRAFT_KEY = "gacha-admin:draft";
-const UNLOCK_KEY = "gacha-admin:unlocked";
 
 function readStorage(storage: () => Storage, key: string): string | null {
   try {
@@ -44,9 +41,6 @@ function writeStorage(storage: () => Storage, key: string, value: string): void 
 }
 
 export function AdminApp() {
-  const [unlocked, setUnlocked] = useState(
-    () => readStorage(() => window.sessionStorage, UNLOCK_KEY) === "1",
-  );
   return (
     <main className="admin">
       <header className="admin-header">
@@ -60,54 +54,8 @@ export function AdminApp() {
           を設定してから公開してください。
         </p>
       )}
-      {unlocked ? (
-        <Editor />
-      ) : (
-        <SecretGate
-          onUnlock={() => {
-            writeStorage(() => window.sessionStorage, UNLOCK_KEY, "1");
-            setUnlocked(true);
-          }}
-        />
-      )}
+      <Editor />
     </main>
-  );
-}
-
-function SecretGate({ onUnlock }: { readonly onUnlock: () => void }) {
-  const inputId = useId();
-  const [value, setValue] = useState("");
-  const [error, setError] = useState(false);
-  const submit = (event: FormEvent) => {
-    event.preventDefault();
-    if (safeEqual(value, SECRET)) {
-      onUnlock();
-    } else {
-      setError(true);
-    }
-  };
-  return (
-    <form className="card gate" onSubmit={submit}>
-      <label htmlFor={inputId}>合言葉</label>
-      <input
-        id={inputId}
-        type="password"
-        autoComplete="current-password"
-        value={value}
-        onChange={(event) => {
-          setValue(event.target.value);
-          setError(false);
-        }}
-      />
-      {error && (
-        <p className="field-error" role="alert">
-          合言葉が違います。
-        </p>
-      )}
-      <button type="submit" className="btn btn-primary">
-        開く
-      </button>
-    </form>
   );
 }
 
@@ -223,9 +171,6 @@ function EventFields({
   const ids = {
     name: useId(),
     id: useId(),
-    from: useId(),
-    to: useId(),
-    daily: useId(),
   };
   return (
     <section className="card" aria-labelledby="event-title">
@@ -260,38 +205,9 @@ function EventFields({
             </button>
           </div>
           <p className="help">
-            回数はこの ID ごとに数えます。同じイベントで QR を作り直すときは変えないでください。
+            参加者の画面に出る結果の履歴は、この ID ごとに分けて記録します。同じイベントで QR
+            を作り直すときは変えないでください。
           </p>
-        </div>
-        <div className="field">
-          <label htmlFor={ids.from}>開始（日本時間）</label>
-          <input
-            id={ids.from}
-            type="datetime-local"
-            value={draft.from}
-            onChange={(event) => onChange({ from: event.target.value })}
-          />
-        </div>
-        <div className="field">
-          <label htmlFor={ids.to}>終了（日本時間）</label>
-          <input
-            id={ids.to}
-            type="datetime-local"
-            value={draft.to}
-            onChange={(event) => onChange({ to: event.target.value })}
-          />
-        </div>
-        <div className="field">
-          <label htmlFor={ids.daily}>1日に回せる回数</label>
-          <input
-            id={ids.daily}
-            type="number"
-            inputMode="numeric"
-            min={1}
-            max={LIMITS.maxDaily}
-            value={Number.isNaN(draft.daily) ? "" : draft.daily}
-            onChange={(event) => onChange({ daily: event.target.valueAsNumber })}
-          />
         </div>
       </div>
     </section>
@@ -429,10 +345,7 @@ function IssuedView({ issued, stale }: { readonly issued: Issued; readonly stale
         width={320}
         height={320}
       />
-      <p className="issued-meta">
-        {issued.config.name}・{formatDateTime(issued.config.from)} 〜{" "}
-        {formatDateTime(issued.config.to)}・1日 {issued.config.daily} 回
-      </p>
+      <p className="issued-meta">{issued.config.name}</p>
       <div className="url-box">
         <code>{issued.url}</code>
       </div>

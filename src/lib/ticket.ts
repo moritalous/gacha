@@ -22,9 +22,6 @@ export async function issueTicket(config: EventConfig, secret: string): Promise<
     v: config.v,
     id: config.id,
     name: config.name,
-    from: config.from,
-    to: config.to,
-    daily: config.daily,
     items: config.items.map(({ c, l, n }) => ({ c, l, n })),
   };
   const d = encodeText(JSON.stringify(ordered));

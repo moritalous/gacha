@@ -21,11 +21,6 @@ describe("draft", () => {
     expect(draftToConfig(configToDraft(config))).toEqual(config);
   });
 
-  it("日本時間の入力を +09:00 付きの日時にする", () => {
-    const config = draftToConfig({ ...defaultDraft(now), from: "2026-12-01T10:00" });
-    expect(config.from).toBe("2026-12-01T10:00:00+09:00");
-  });
-
   it("イベント ID に日付を含める", () => {
     expect(generateEventId(now)).toMatch(/^evt-20261201-[a-z0-9]{4}$/);
   });
