@@ -11,16 +11,10 @@ export interface Prize {
 /** URL の `d` に入るイベント設定です。 */
 export interface EventConfig {
   readonly v: 1;
-  /** イベント ID。回数を数える単位です */
+  /** イベント ID。結果の履歴を分けて記録する単位です */
   readonly id: string;
   /** イベント名 */
   readonly name: string;
-  /** 有効期間の開始（ISO 8601、タイムゾーン付き） */
-  readonly from: string;
-  /** 有効期間の終了（ISO 8601、タイムゾーン付き） */
-  readonly to: string;
-  /** 1 日に回せる回数 */
-  readonly daily: number;
   readonly items: readonly Prize[];
 }
 
@@ -30,7 +24,6 @@ export const LIMITS = {
   labelMaxLength: 20,
   maxItems: 12,
   maxCount: 9999,
-  maxDaily: 99,
 } as const;
 
 const COLOR_PATTERN = /^#[0-9a-f]{6}$/i;
@@ -46,16 +39,6 @@ export function validateEvent(config: EventConfig): string[] {
   }
   if (config.name.trim() === "" || config.name.length > LIMITS.nameMaxLength) {
     errors.push(`イベント名は 1〜${LIMITS.nameMaxLength} 文字で入力してください。`);
-  }
-  const from = Date.parse(config.from);
-  const to = Date.parse(config.to);
-  if (Number.isNaN(from) || Number.isNaN(to)) {
-    errors.push("有効期間の開始と終了を入力してください。");
-  } else if (from >= to) {
-    errors.push("有効期間の終了は開始より後にしてください。");
-  }
-  if (!Number.isInteger(config.daily) || config.daily < 1 || config.daily > LIMITS.maxDaily) {
-    errors.push(`1日に回せる回数は 1〜${LIMITS.maxDaily} の整数にしてください。`);
   }
   if (config.items.length === 0 || config.items.length > LIMITS.maxItems) {
     errors.push(`カプセルは 1〜${LIMITS.maxItems} 種類にしてください。`);
@@ -109,14 +92,11 @@ export function parseEvent(value: unknown): EventConfig | null {
   if (!isRecord(value)) {
     return null;
   }
-  const { v, id, name, from, to, daily, items } = value;
+  const { v, id, name, items } = value;
   if (
     v !== 1 ||
     typeof id !== "string" ||
     typeof name !== "string" ||
-    typeof from !== "string" ||
-    typeof to !== "string" ||
-    typeof daily !== "number" ||
     !Array.isArray(items) ||
     !items.every(isPrize)
   ) {
@@ -126,9 +106,6 @@ export function parseEvent(value: unknown): EventConfig | null {
     v,
     id,
     name,
-    from,
-    to,
-    daily,
     items: items.map(({ c, l, n }) => ({ c, l, n })),
   };
   return validateEvent(config).length === 0 ? config : null;

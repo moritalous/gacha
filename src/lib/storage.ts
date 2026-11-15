@@ -8,7 +8,6 @@ export interface DrawRecord {
   readonly index: number;
   readonly label: string;
   readonly color: string;
-  readonly claimed: boolean;
 }
 
 /** localStorage と同じ形の最小インターフェースです。テストで差し替えられます。 */
@@ -30,8 +29,7 @@ function isDrawRecord(value: unknown): value is DrawRecord {
     typeof record["at"] === "string" &&
     typeof record["index"] === "number" &&
     typeof record["label"] === "string" &&
-    typeof record["color"] === "string" &&
-    typeof record["claimed"] === "boolean"
+    typeof record["color"] === "string"
   );
 }
 
@@ -63,18 +61,9 @@ export class DrawHistory {
       index,
       label: prize.l,
       color: prize.c,
-      claimed: false,
     };
     this.#save(eventId, date, [...this.list(eventId, date), record]);
     return record;
-  }
-
-  markClaimed(eventId: string, date: string, recordId: string): DrawRecord[] {
-    const records = this.list(eventId, date).map((record) =>
-      record.id === recordId ? { ...record, claimed: true } : record,
-    );
-    this.#save(eventId, date, records);
-    return records;
   }
 
   #save(eventId: string, date: string, records: readonly DrawRecord[]): void {
@@ -95,4 +84,15 @@ export function getBrowserStore(): KeyValueStore | null {
   } catch {
     return null;
   }
+}
+
+/** メモリ上だけに保存する領域です。ページを閉じると消えます。 */
+export function memoryStore(): KeyValueStore {
+  const data = new Map<string, string>();
+  return {
+    getItem: (key) => data.get(key) ?? null,
+    setItem: (key, value) => {
+      data.set(key, value);
+    },
+  };
 }

@@ -10,25 +10,16 @@ vi.mock("qrcode", () => ({
   default: { toDataURL: vi.fn(async () => "data:image/png;base64,AAAA") },
 }));
 
-async function unlock(user: ReturnType<typeof userEvent.setup>): Promise<void> {
-  await user.type(screen.getByLabelText("合言葉"), SECRET);
-  await user.click(screen.getByRole("button", { name: "開く" }));
-}
-
 describe("AdminApp", () => {
-  it("合言葉が違うと開けない", async () => {
-    const user = userEvent.setup();
+  it("合言葉を入力せずにすぐ使える", () => {
     render(<AdminApp />);
-    await user.type(screen.getByLabelText("合言葉"), "wrong");
-    await user.click(screen.getByRole("button", { name: "開く" }));
-    expect(screen.getByRole("alert")).toHaveTextContent("合言葉が違います");
-    expect(screen.queryByText("カプセル")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("合言葉")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "URL と QR コードを発行する" })).toBeEnabled();
   });
 
   it("発行した URL はガチャ画面で読める", async () => {
     const user = userEvent.setup();
     render(<AdminApp />);
-    await unlock(user);
 
     const label = screen.getByLabelText("1行目のラベル");
     await user.clear(label);
@@ -49,7 +40,6 @@ describe("AdminApp", () => {
   it("入力に問題があると発行できない", async () => {
     const user = userEvent.setup();
     render(<AdminApp />);
-    await unlock(user);
 
     for (const index of [1, 2, 3, 4]) {
       const input = screen.getByLabelText(`${index}行目の数`);
@@ -63,7 +53,6 @@ describe("AdminApp", () => {
   it("行を追加・削除すると確率が変わる", async () => {
     const user = userEvent.setup();
     render(<AdminApp />);
-    await unlock(user);
 
     await user.click(screen.getByRole("button", { name: "＋ 行を追加" }));
     expect(screen.getByLabelText("5行目のラベル")).toHaveValue("5等");
@@ -74,7 +63,6 @@ describe("AdminApp", () => {
   it("発行後に設定を変えると、作り直すよう案内する", async () => {
     const user = userEvent.setup();
     render(<AdminApp />);
-    await unlock(user);
     await user.click(screen.getByRole("button", { name: "URL と QR コードを発行する" }));
     await screen.findByText(/#d=/);
 

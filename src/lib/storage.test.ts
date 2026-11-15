@@ -24,18 +24,7 @@ describe("DrawHistory", () => {
       index: 3,
       label: "1等",
       color: "#ff0000",
-      claimed: false,
     });
-  });
-
-  it("受け取り済みにできる", () => {
-    const history = new DrawHistory(memoryStore());
-    const first = history.add("evt", "d", prize, 0, at);
-    const second = history.add("evt", "d", prize, 0, at);
-    const records = history.markClaimed("evt", "d", first.id);
-    expect(records.find((r) => r.id === first.id)?.claimed).toBe(true);
-    expect(records.find((r) => r.id === second.id)?.claimed).toBe(false);
-    expect(history.list("evt", "d")).toEqual(records);
   });
 
   it("壊れたデータは空として扱う", () => {

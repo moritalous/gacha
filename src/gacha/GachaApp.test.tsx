@@ -28,52 +28,33 @@ describe("GachaApp", () => {
     expect(await screen.findByText("無効な QR コードです")).toBeInTheDocument();
   });
 
-  it("保存領域が使えなければ回させない", async () => {
+  it("保存領域が使えなくても回せる", async () => {
+    const user = userEvent.setup();
     await openWith(sampleConfig());
     render(<GachaApp store={null} spinMs={0} />);
-    expect(await screen.findByText("このブラウザでは回せません")).toBeInTheDocument();
+    await user.click(await screen.findByRole("button", { name: "ガチャを回す" }));
+    expect(await screen.findByRole("dialog")).toBeInTheDocument();
   });
 
-  it("開始前は回せない", async () => {
-    const start = new Date(Date.now() + 60 * 60 * 1000);
-    await openWith(
-      sampleConfig({
-        from: start.toISOString(),
-        to: new Date(start.getTime() + 60 * 60 * 1000).toISOString(),
-      }),
-    );
+  it("何度でも回せて、最近の結果が新しい順に並ぶ", async () => {
+    const user = userEvent.setup();
+    await openWith(sampleConfig());
     render(<GachaApp store={memoryStore()} spinMs={0} />);
-    expect(await screen.findByText(/開始前です/)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "ガチャを回す" })).toBeDisabled();
+
+    for (let i = 0; i < 3; i++) {
+      await user.click(await screen.findByRole("button", { name: "ガチャを回す" }));
+      const dialog = await screen.findByRole("dialog");
+      expect(within(dialog).getByRole("heading").textContent).toMatch(/^(1等|2等)$/);
+      await user.click(within(dialog).getByRole("button", { name: "閉じる" }));
+    }
+
+    expect(screen.getByRole("button", { name: "ガチャを回す" })).toBeEnabled();
+    expect(within(screen.getByRole("list")).getAllByRole("listitem")).toHaveLength(3);
   });
 
-  it("回すと結果が出て、回数を使い切ると回せなくなる", async () => {
+  it("開き直しても結果の履歴が残る", async () => {
     const user = userEvent.setup();
-    await openWith(sampleConfig({ daily: 2 }));
-    const store = memoryStore();
-    render(<GachaApp store={store} spinMs={0} />);
-
-    expect(await screen.findByText(/本日あと/)).toHaveTextContent("本日あと 2 回");
-    await user.click(screen.getByRole("button", { name: "ガチャを回す" }));
-
-    const dialog = await screen.findByRole("dialog");
-    expect(within(dialog).getByRole("heading").textContent).toMatch(/^(1等|2等)$/);
-    await user.click(within(dialog).getByRole("button", { name: /閉じる/ }));
-    expect(screen.getByText(/本日あと/)).toHaveTextContent("本日あと 1 回");
-
-    await user.click(screen.getByRole("button", { name: "ガチャを回す" }));
-    await user.click(
-      within(await screen.findByRole("dialog")).getByRole("button", { name: "閉じる" }),
-    );
-
-    expect(screen.getByText(/本日の回数は終了しました/)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "ガチャを回す" })).toBeDisabled();
-    expect(screen.getAllByRole("listitem")).toHaveLength(2);
-  });
-
-  it("開き直しても回数は戻らない", async () => {
-    const user = userEvent.setup();
-    await openWith(sampleConfig({ daily: 1 }));
+    await openWith(sampleConfig());
     const store = memoryStore();
     const first = render(<GachaApp store={store} spinMs={0} />);
     await user.click(await screen.findByRole("button", { name: "ガチャを回す" }));
@@ -81,23 +62,23 @@ describe("GachaApp", () => {
     first.unmount();
 
     render(<GachaApp store={store} spinMs={0} />);
-    expect(await screen.findByText(/本日の回数は終了しました/)).toBeInTheDocument();
+    expect(await screen.findByText("最近の結果")).toBeInTheDocument();
     expect(screen.getAllByRole("listitem")).toHaveLength(1);
   });
 
-  it("スタッフが受け取り済みにできる", async () => {
+  it("結果画面に受付で見せる案内と現在時刻を出す", async () => {
     const user = userEvent.setup();
     await openWith(sampleConfig());
     render(<GachaApp store={memoryStore()} spinMs={0} />);
     await user.click(await screen.findByRole("button", { name: "ガチャを回す" }));
 
     const dialog = await screen.findByRole("dialog");
-    await user.click(within(dialog).getByRole("button", { name: /スタッフ用/ }));
-    expect(within(dialog).getByText(/スタッフの方が押してください/)).toBeInTheDocument();
-    await user.click(within(dialog).getByRole("button", { name: "受け取り済みにする" }));
-    expect(within(dialog).getByText("受け取り済み")).toBeInTheDocument();
+    expect(within(dialog).getByText("この画面を受付で見せてください。")).toBeInTheDocument();
+    expect(within(dialog).getByText("現在時刻")).toBeInTheDocument();
+    expect(within(dialog).queryByText(/受け取り済み/)).not.toBeInTheDocument();
 
-    await user.click(within(dialog).getByRole("button", { name: /閉じる/ }));
-    expect(within(screen.getByRole("list")).getByText("受け取り済み")).toBeInTheDocument();
+    await user.click(within(dialog).getByRole("button", { name: "閉じる" }));
+    await user.click(screen.getByRole("button", { name: "結果を見る" }));
+    expect(await screen.findByRole("dialog")).toBeInTheDocument();
   });
 });

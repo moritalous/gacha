@@ -1,4 +1,4 @@
-import { type CSSProperties, useEffect, useId, useRef, useState } from "react";
+import { type CSSProperties, useEffect, useId, useRef } from "react";
 import type { DrawRecord } from "../lib/storage.ts";
 import { formatClock, formatDateTime } from "../lib/time.ts";
 import { Capsule } from "./Capsule.tsx";
@@ -6,14 +6,11 @@ import { Capsule } from "./Capsule.tsx";
 interface ResultSheetProps {
   readonly record: DrawRecord;
   readonly now: Date;
-  readonly remaining: number;
-  readonly onClaim: (recordId: string) => void;
   readonly onClose: () => void;
 }
 
-export function ResultSheet({ record, now, remaining, onClaim, onClose }: ResultSheetProps) {
+export function ResultSheet({ record, now, onClose }: ResultSheetProps) {
   const titleId = useId();
-  const [confirming, setConfirming] = useState(false);
   const closeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -44,41 +41,11 @@ export function ResultSheet({ record, now, remaining, onClaim, onClose }: Result
           </div>
         </dl>
 
-        {record.claimed ? (
-          <p className="claimed-badge">受け取り済み</p>
-        ) : confirming ? (
-          <div className="confirm">
-            <p>スタッフの方が押してください。受け取り済みにしますか？</p>
-            <div className="confirm-actions">
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={() => {
-                  onClaim(record.id);
-                  setConfirming(false);
-                }}
-              >
-                受け取り済みにする
-              </button>
-              <button type="button" className="btn" onClick={() => setConfirming(false)}>
-                やめる
-              </button>
-            </div>
-          </div>
-        ) : (
-          <p className="sheet-hint">この画面を受付で見せてください。</p>
-        )}
+        <p className="sheet-hint">この画面を受付で見せてください。</p>
 
-        <div className="sheet-actions">
-          {!record.claimed && !confirming && (
-            <button type="button" className="btn btn-quiet" onClick={() => setConfirming(true)}>
-              受け取り済みにする（スタッフ用）
-            </button>
-          )}
-          <button ref={closeRef} type="button" className="btn" onClick={onClose}>
-            {remaining > 0 ? `閉じる（本日あと ${remaining} 回）` : "閉じる"}
-          </button>
-        </div>
+        <button ref={closeRef} type="button" className="btn" onClick={onClose}>
+          閉じる
+        </button>
       </section>
     </div>
   );
