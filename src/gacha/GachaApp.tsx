@@ -135,7 +135,12 @@ function Gacha({ config, history, spinMs }: GachaProps) {
 
   const resultRecord =
     phase.kind === "result" ? records.find((record) => record.id === phase.recordId) : undefined;
-  const recent = records.slice(-HISTORY_SIZE).reverse();
+  // 回している間は、今回の結果を履歴に出さない（演出の前にネタバレしないように）
+  const spinningId = phase.kind === "spinning" ? phase.record.id : null;
+  const recent = records
+    .filter((record) => record.id !== spinningId)
+    .slice(-HISTORY_SIZE)
+    .reverse();
 
   return (
     <main className="gacha">
@@ -162,7 +167,7 @@ function Gacha({ config, history, spinMs }: GachaProps) {
         </button>
       </div>
 
-      {records.length > 0 && (
+      {recent.length > 0 && (
         <section className="history" aria-labelledby="history-title">
           <h2 id="history-title">最近の結果</h2>
           <ol>

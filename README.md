@@ -10,7 +10,7 @@
 
 ### 1. 合言葉を設定する（初回のみ）
 
-URL の改ざんチェックには合言葉を使います。リポジトリの **Settings → Secrets and variables → Actions** で、Secret `GACHA_SECRET` にランダムな文字列を登録してください。
+URL の改ざんチェックには合言葉を使います。リポジトリの **Settings → Secrets and variables → Actions → Variables** タブで、変数 `GACHA_SECRET` にランダムな文字列を登録してください（同名の Secret でも動きます。両方ある場合は Variable が優先されます）。
 
 合言葉はビルド時にページへ埋め込まれ、画面が内部で使います。管理画面で入力することはないので、値を覚えておく必要はありません。未設定の場合は初期値 `change-me` になり、管理画面に警告が出ます。
 
@@ -38,7 +38,7 @@ URL の改ざんチェックには合言葉を使います。リポジトリの 
 
 ### 古い QR を無効にしたいとき
 
-Secret `GACHA_SECRET` を別の値に変えて、Actions の「Deploy to GitHub Pages」を再実行してください。それまでに発行した URL はすべて「無効な QR コード」になります。
+Variable `GACHA_SECRET` を別の値に変えて、Actions の「Deploy to GitHub Pages」を再実行してください。それまでに発行した URL はすべて「無効な QR コード」になります。
 
 ## 仕様と割り切り
 

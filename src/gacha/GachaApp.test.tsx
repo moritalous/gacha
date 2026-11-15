@@ -52,6 +52,15 @@ describe("GachaApp", () => {
     expect(within(screen.getByRole("list")).getAllByRole("listitem")).toHaveLength(3);
   });
 
+  it("回している間は、今回の結果を履歴に出さない", async () => {
+    const user = userEvent.setup();
+    await openWith(sampleConfig());
+    render(<GachaApp store={memoryStore()} spinMs={60_000} />);
+    await user.click(await screen.findByRole("button", { name: "ガチャを回す" }));
+    expect(screen.getByRole("button", { name: "回しています…" })).toBeDisabled();
+    expect(screen.queryByText("最近の結果")).not.toBeInTheDocument();
+  });
+
   it("開き直しても結果の履歴が残る", async () => {
     const user = userEvent.setup();
     await openWith(sampleConfig());
