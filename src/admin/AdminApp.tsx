@@ -50,7 +50,7 @@ export function AdminApp() {
       {IS_DEFAULT_SECRET && (
         <p className="banner banner-warn" role="note">
           合言葉が初期値（<code>{DEFAULT_SECRET}</code>
-          ）のままです。本番では GitHub の Secret <code>GACHA_SECRET</code>{" "}
+          ）のままです。本番では GitHub の Variables に <code>GACHA_SECRET</code>{" "}
           を設定してから公開してください。
         </p>
       )}
